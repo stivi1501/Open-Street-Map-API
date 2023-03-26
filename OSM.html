@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mapa z menu</title>
+<script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+<style>
+.container{
+	position      : relative;
+	margin        : 5px;}
+.box{
+	width         : 100%;
+	height        : 100%;            
+	position      : absolute;
+	top           : 0;
+	left          : 0;}
+	
+.stack-top{
+	width         : 40px;
+	height        : 100%;     
+	z-index       : 9;}
+	
+a:link {text-decoration: none;color: black;}
+a:visited {}
+a:hover {
+background-color: black;none;color: white;}
+a:active {} 
+</style>
+<script>
+var fromProjection = new OpenLayers.Projection("EPSG:4326"); // transform from WGS 1984
+var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+
+var inWidth;
+var inHeight;
+
+var browser_margin_height	=  40;	//margines okna przeglądarki
+var browser_margin_width	=  25;  	//margines okna przeglądarki
+var menu_minimized				=  35	//szerokość paska menu po zamknięciu
+var menu_maximized				= 500;
+var menu_blocked					=   0;
+
+var SetA = [];            //tu są trzymane dane o markerach
+var SetZ = [];            //tu są trzymane dane o markerach
+
+
+function block_div(){menu_blocked=1;}
+function free_div() {menu_blocked=0;}
+
+function close_div() {
+if (menu_blocked==0)
+	{
+		document.getElementById("div_menu").style.width = menu_minimized+"px";
+		document.getElementById("div_dynamic_menu").style.display = "none";
+	}
+}
+function show_div() {  
+  document.getElementById("div_menu").style.width = (menu_maximized)+"px";
+  if (menu_blocked==0)
+  {
+		document.getElementById("div_dynamic_menu").style.display = "block";
+  }
+}
+
+function InitDiv(browser_margin_widthx,browser_margin_heighty)
+{
+if( typeof( window.innerWidth ) == "number" ) { 
+	inWidh		= window.innerWidth; 
+	inHeight	= window.innerHeight; 
+	} else 
+if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) )
+{ 
+	inWidh = document.documentElement.clientWidth; 
+	inHeight = document.documentElement.clientHeight; 
+	} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) { 
+	inWidh = document.body.clientWidth; 
+	inHeight = document.body.clientHeight; 
+	} 
+	document.getElementById("div_main").style.width		= (inWidh-browser_margin_widthx)+"px";
+	document.getElementById("div_main").style.height	= (inHeight-browser_margin_heighty)+"px";
+	document.getElementById("Map").style.height				= (inHeight-browser_margin_heighty)+"px";
+	document.getElementById("div_menu").style.height	= (inHeight-browser_margin_heighty)+"px";
+	document.getElementById("div_menu").style.width		= (35)+"px";
+
+	document.getElementById("div_menu").style.width		= menu_minimized+"px";
+	document.getElementById("div_dynamic_menu").style.display = "none";
+	menu_blocked=0;
+}
+
+function EventFunct(evt) {
+bounds = map.getExtent();
+bounds.transform(map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+var b_left=bounds.left; 
+var b_right=bounds.right; 
+var b_top=bounds.top; 
+var b_bottom=bounds.bottom;
+var zoom = map.getZoom(); 
+
+//parametry mapy i diva mapy
+let output_text = "";
+output_text = "Wymiary geograficzne mapy:\n";
+output_text += "Prawa strona mapy :"+b_right+"\n";
+output_text += "Lewa strona mapy :"+b_left+"\n";
+output_text += "Góra mapy :"+b_top+"\n";
+output_text += "Dół mapy :"+b_bottom+"\n";
+output_text += "zoom :"+zoom+"\n";
+
+output_text += "Wymiary mapy w pikselach:\n";
+div_width=document.getElementById("Map").offsetWidth; 
+div_height=document.getElementById("Map").offsetHeight; 
+output_text += "Szerokość:"+div_width+"\n";
+output_text += "Wysokość:"+div_height+"\n";
+
+alert(output_text);
+
+}
+function EventFunct2(evt) {
+let output_text = "Parametry kliknięcia : \n";
+//EventFunct(evt);
+var lonlat = map.getLonLatFromPixel(evt.xy); 
+lonlatT = new OpenLayers.LonLat(lonlat.lon,lonlat.lat).transform(toProjection,fromProjection); 
+
+var click_lon=lonlatT.lon;
+var click_lat=lonlatT.lat;
+
+//Długość i szerokość geograficzna kliknięcia
+output_text += "Długość : "+click_lon+"\n";
+output_text += "Szerokość : "+click_lat+"\n";
+alert(output_text);
+
+}
+function InitMap() {
+Height_center	= 17;//poczatkowa współrzędna środka mapy
+Width_center	= 51;//poczatkowa współrzędna środka mapy
+z_center			= 12;//poczatkowa skala mapy
+
+map = new OpenLayers.Map("Map");
+map.addLayer(new OpenLayers.Layer.OSM());
+focusPoint = new OpenLayers.LonLat(Height_center,Width_center); 
+
+focusPoint.transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+map.setCenter(focusPoint, z_center);
+//Add markers layer
+markers = new OpenLayers.Layer.Markers("Markers");
+map.addLayer(markers);
+
+map.events.register("click", map, EventFunct2);
+map.events.register("moveend", map, EventFunct);
+
+}
+
+function MarkerDraw(MarkerID,lon,lat,icon_url)
+{
+var lonlat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject());
+var size       = new OpenLayers.Size(21,25);
+var offset     = new OpenLayers.Pixel(-(size.w/2), -size.h);
+//var icon       = new OpenLayers.Icon("http://dev.openlayers.org/img/marker-blue.png",size,offset);
+var icon       = new OpenLayers.Icon(icon_url+".png",size,offset);
+var mark       = new OpenLayers.Marker(lonlat,icon);
+mark.MarkerID    = MarkerID;
+markers.addMarker(mark);
+SetZ.push(mark);
+
+}
+
+function MarkerRemove(MarkerID) 
+{
+for (let i = 0; i < SetZ.length; i++) {
+  if (SetZ[i].MarkerID==MarkerID) 
+	{
+	 markers.removeMarker(SetZ[i]);
+	 SetZ[i].MarkerID=0;
+	}
+}
+
+var NewSetZ = [];
+for (let i = 0; i < SetZ.length; i++) {
+if (SetZ[i].MarkerID!=0){
+NewSetZ.push(SetZ[i]);
+};
+}
+SetZ=NewSetZ;
+}
+
+
+function newSetDraw(url){
+fetch(url).then(
+	function (response) {
+		if (response.status >= 200 && response.status <= 299) {
+			return response.json();
+		}
+	}
+).then(
+	function (setB) {
+	setC = [];
+	setD = [];
+	//rysowanie nowego markera
+	let nowyMarker = 1;
+	for (let i = 0; i < setB.length; i++) {
+		let nowyMarker = 1;
+		for (let j = 0; j < SetA.length; j++) {
+			if ((SetA[j].MarkerID + SetA[j].icon) === (setB[i].MarkerID + setB[i].icon)) {
+				if (nowyMarker == 1) {
+				nowyMarker = 0;
+				}
+			};
+		}
+		if (nowyMarker === 1) {
+			MarkerDraw(setB[i].MarkerID, parseFloat(setB[i].lon), parseFloat(setB[i].lat), setB[i].icon);};
+	}
+	//wymazywanie  markera
+	let wymazMarker = 1;
+	for (let i = 0; i < SetA.length; i++) {
+		let wymazMarker = 1;
+		for (let j = 0; j < setB.length; j++) {
+			if ((setB[j].MarkerID + setB[j].icon) === (SetA[i].MarkerID + SetA[i].icon)) {
+				if (wymazMarker == 1) {
+					wymazMarker = 0;
+				}
+			};
+		}
+		if (wymazMarker === 1) {
+			MarkerRemove(SetA[i].MarkerID);
+		};
+	}
+	SetA = setB;
+	}
+);
+}
+</script>
+</head>
+<body onload="InitDiv(browser_margin_width,browser_margin_height);InitMap()" onchange="InitDiv(browser_margin_width,browser_margin_height)" onresize="InitDiv(browser_margin_width,browser_margin_height)">
+<div  class="container" id="div_main" style="height:500px;width:100%;background: orange;">
+<div class="box" id="Map" style="height:100%;width:100%;background: grey"></div>
+	<div class="box stack-top" id="div_menu" style="background: lightgrey;height:100%;"  onmousemove="show_div()" onmouseout="close_div()">
+	   <div id="div_dynamic_menu" style="display:none">
+		 STAN MENU:
+			<a href="javascript:block_div()">ZABLOKUJ</a>
+			<a href="javascript:free_div()">ODBLOKUJ</a>
+
+		</BR></BR>
+			<a href="javascript:newSetDraw('http://localhost/markers1.txt?time=1&time=Date.now()')">Rysowanie markerów z pliku markers1.txt (serwer włączony)</a></BR>
+			<a href="javascript:newSetDraw('http://localhost/markers2.txt?time=1&time=Date.now()')">Rysowanie markerów z pliku markers2.txt (serwer włączony)</a></BR>			
+		 </div>
+	</div>
+</div>
+</body>
+</html>
+
