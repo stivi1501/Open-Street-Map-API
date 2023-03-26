@@ -1,9 +1,9 @@
 <p align="justify">
-1.Wstęp
+1.Wstęp</BR>
 Projekt jest praktycznym przykładem prezentującym rozwiązania pomocne w wykorzystaniu podkładów mapowych w przyszłych projektach.
 </p>
 <p align="justify">
-2.Użyte technologie:
+2.Użyte technologie:</BR>
 - JavaScript (struktura dokumentu według DOM, fetch do pobierania plików, przerwania wywoływane zdarzeniami),
 - kaskadowe arkusze styli CSS,
 - podkłady mapowe Open Street Map.
