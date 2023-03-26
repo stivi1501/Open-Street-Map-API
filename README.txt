@@ -11,5 +11,5 @@ W przypadku braku użycia serwera WWW część z funkcji nie będzie działać.
 
 4. Główne funkcjonalności
 Po wpisaniu odpowiedniego adresu (u mnie http://localhost/OSM.html) okno przeglądarki wypełni mapa z podkładami Open Street Map. Po kliknięciu w dowolny punkt mapy pokaże się formatka ze współrzędnymi klikniętego punktu. W przypadku przesunięcia mapy (przytrzymanie lewego klawisza i ruch myszką pokaże się formatka zawierająca parametry krawędzi mapy, zoom mapy, parametry kliknięcia oraz rozmiar diva, na którym prezentuje się mapa.
-![alt text](https://github.com/stivi1501/Open-Street-Map-API/blob/main/OSM_EDGE.PNG?raw=true)
+![plot](https://github.com/stivi1501/Open-Street-Map-API/blob/main/OSM_EDGE.PNG?raw=true)
 Po najechaniu na szary obszar po prawej stronie okna przeglądarki wyskoczy nam menu, w którym są odsyłacze do zaznaczania markerów na mapie (<a href="https://github.com/stivi1501/Open-Street-Map-API/blob/main/OSM_DRAW_MARKERS.PNG">rys.2</a>).
